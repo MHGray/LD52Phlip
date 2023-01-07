@@ -281,6 +281,17 @@ let Menus = {
         }
       }));
 
+      this.buttons.push(new Button({
+        x: 10,
+        y: 10,
+        width: 300,
+        height: 50,
+        text: `Stop and Dig`,
+        callback: function(){
+          game.player.action = true;
+        }
+      }))
+
       this.difficulty = game.round * 1.5;
       this.gauge = {
         x: game.width/3,
@@ -291,7 +302,8 @@ let Menus = {
         targetStart: game.randInt(70),
         targetSize: game.randInt(20,5),
         targetEnd: 0,
-        mode: 1
+        mode: 1,
+        stop: false,
       }
       this.baseSpeed = 12;
 
@@ -303,16 +315,27 @@ let Menus = {
       this.buttons.forEach(btn =>{
         btn.update();
       })
-      this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
-
+      
+      if(game.player.action){
+        game.player.action = false;
+        this.gauge.stop = true;
+      }
+      
       //increase while mode is positive, decrease while negative, switch on either end
+      if(this.gauge.stop){
+        
+      }else {
+        
+        this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
+      }
       if(this.gauge.juice > 100){
-          this.gauge.mode = -1;
+        this.gauge.mode = -1;
           this.gauge.juice = 100;
       }else if(this.gauge.juice < 0){
           this.gauge.juice = 0;
           this.gauge.mode = 1;
       }
+
     },
     draw: function(){
       //game.artist.clearCanvas();
