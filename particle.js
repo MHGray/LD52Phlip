@@ -5,7 +5,7 @@ let Particle = function(originX, originY){
     }
     this.x = originX;
     this.y = originY;
-    this.size = game.randInt(5,1);
+    this.size = game.randInt(10,1);
     this.color = game.artist.randColor();
     this.xSpeed = Math.random() * 21 - 10;
     this.ySpeed = Math.random() * 21 - 10;

@@ -25,7 +25,7 @@ var game = {
     
     let imageNames = ['backgroundBeach', 'backgroundStorage', 'backgroundGarage'];
 
-    for(let i = 1; i <= 25; i++){
+    for(let i = 1; i <= 35; i++){
       imageNames.push(`item${i}`);
     }
     ////////////////////  Images
@@ -164,6 +164,14 @@ var game = {
       return menu.name == name;
     })
   }, 
+
+  getItemById: function(id){
+    return ITEMS.find(item => item.id == id);
+  },
+
+  getInfoById: function(id){
+    return INFO.find(info => info.id == id);
+  },
 
   randInt: function(range, start = 0){
     return Math.floor(Math.random() * range) + start;

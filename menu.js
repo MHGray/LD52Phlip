@@ -271,6 +271,7 @@ let Menus = {
       this.name = "beachLoaction";
       this.realizationTime = 1500;
       this.background = 'backgroundBeach';
+      this.chances = 5;
 
       this.buttons.push(new Button({
         x: game.width/2 + 5,
