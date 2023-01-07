@@ -23,7 +23,7 @@ var game = {
     this.artist.drawRect(0,0,this.width,this.height,"#aaa");
     this.background = new Background();
     
-    let imageNames = ['backgroundBeach'];
+    let imageNames = ['backgroundBeach', 'backgroundStorage', 'backgroundGarage'];
 
     for(let i = 1; i <= 25; i++){
       imageNames.push(`item${i}`);

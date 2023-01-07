@@ -330,7 +330,215 @@ let Menus = {
       }else if(this.gauge.stop){
         if(this.gauge.juice >= this.gauge.targetStart && this.gauge.juice <= this.gauge.targetEnd){
           game.exitMenu();
-          game.enterMenu(Menus.itemGetMenu.load(2));
+          game.enterMenu(Menus.itemGetMenu.load(2, this.background));
+        }else{
+          game.exitMenu();
+          game.enterMenu(Menus.itemMissedMenu.load('backgroundBeach'));
+          //Display failure message
+        }
+        
+      }else{
+        this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
+      }
+      if(this.gauge.juice > 100){
+        this.gauge.mode = -1;
+          this.gauge.juice = 100;
+      }else if(this.gauge.juice < 0){
+          this.gauge.juice = 0;
+          this.gauge.mode = 1;
+      }
+
+    },
+    draw: function(){
+      game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
+      game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
+      game.artist.writeText(this.realizationTime, 10,10,10,'red');
+      
+      game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
+      game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
+      
+      let xScale = game.width/300;
+      
+      game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
+      game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
+      
+      //okay button
+      this.buttons.forEach(btn =>{
+        btn.draw();
+      })
+    }
+  },
+
+  storageLocationMenu:{
+    load: function(){
+      Menu.apply(this);
+      this.name = "beachLoaction";
+      this.realizationTime = 1500;
+      this.background = 'backgroundBeach';
+
+      this.buttons.push(new Button({
+        x: game.width/2 + 5,
+        y: (game.height * 3 / 4) + 15,
+        width: game.width / 6 - 5,
+        height: 50,
+        text: 'Okay',
+        callback: function(){
+          console.log('okay');
+          game.exitMenu();
+        }
+      }));
+
+      this.buttons.push(new Button({
+        x: game.width /2 -150,
+        y: game.height / 3 * 2,
+        width: 300,
+        height: 50,
+        text: `Stop and Dig`,
+        callback: function(){
+          game.player.action = true;
+        }
+      }))
+
+      this.difficulty = game.round * 1.5;
+      this.gauge = {
+        x: game.width/3,
+        y: game.height /2 -20,
+        width: game.width/3,
+        height: 40,
+        juice: 0,
+        targetStart: game.randInt(70),
+        targetSize: game.randInt(20,5),
+        targetEnd: 0,
+        mode: 1,
+        stop: false,
+      }
+      this.baseSpeed = 12;
+
+      this.gauge.targetEnd = Math.min(this.gauge.targetStart + this.gauge.targetSize, 100);
+
+      return this;
+    },
+    update: function(){
+      this.buttons.forEach(btn =>{
+        btn.update();
+      })
+      
+      if(game.player.action){
+        game.player.action = false;
+        this.gauge.stop = true;
+      }
+      
+      //increase while mode is positive, decrease while negative, switch on either end
+      if(this.gauge.stop && this.realizationTime > 0){
+        this.realizationTime -= game.delta;
+      }else if(this.gauge.stop){
+        if(this.gauge.juice >= this.gauge.targetStart && this.gauge.juice <= this.gauge.targetEnd){
+          game.exitMenu();
+          game.enterMenu(Menus.itemGetMenu.load(2, this.background));
+        }else{
+          game.exitMenu();
+          game.enterMenu(Menus.itemMissedMenu.load('backgroundBeach'));
+          //Display failure message
+        }
+        
+      }else{
+        this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
+      }
+      if(this.gauge.juice > 100){
+        this.gauge.mode = -1;
+          this.gauge.juice = 100;
+      }else if(this.gauge.juice < 0){
+          this.gauge.juice = 0;
+          this.gauge.mode = 1;
+      }
+
+    },
+    draw: function(){
+      game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
+      game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
+      game.artist.writeText(this.realizationTime, 10,10,10,'red');
+      
+      game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
+      game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
+      
+      let xScale = game.width/300;
+      
+      game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
+      game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
+      
+      //okay button
+      this.buttons.forEach(btn =>{
+        btn.draw();
+      })
+    }    
+  },
+
+  garageLocationMenu:{
+    load: function(){
+      Menu.apply(this);
+      this.name = "beachLoaction";
+      this.realizationTime = 1500;
+      this.background = 'backgroundBeach';
+
+      this.buttons.push(new Button({
+        x: game.width/2 + 5,
+        y: (game.height * 3 / 4) + 15,
+        width: game.width / 6 - 5,
+        height: 50,
+        text: 'Okay',
+        callback: function(){
+          console.log('okay');
+          game.exitMenu();
+        }
+      }));
+
+      this.buttons.push(new Button({
+        x: game.width /2 -150,
+        y: game.height / 3 * 2,
+        width: 300,
+        height: 50,
+        text: `Stop and Dig`,
+        callback: function(){
+          game.player.action = true;
+        }
+      }))
+
+      this.difficulty = game.round * 1.5;
+      this.gauge = {
+        x: game.width/3,
+        y: game.height /2 -20,
+        width: game.width/3,
+        height: 40,
+        juice: 0,
+        targetStart: game.randInt(70),
+        targetSize: game.randInt(20,5),
+        targetEnd: 0,
+        mode: 1,
+        stop: false,
+      }
+      this.baseSpeed = 12;
+
+      this.gauge.targetEnd = Math.min(this.gauge.targetStart + this.gauge.targetSize, 100);
+
+      return this;
+    },
+    update: function(){
+      this.buttons.forEach(btn =>{
+        btn.update();
+      })
+      
+      if(game.player.action){
+        game.player.action = false;
+        this.gauge.stop = true;
+      }
+      
+      //increase while mode is positive, decrease while negative, switch on either end
+      if(this.gauge.stop && this.realizationTime > 0){
+        this.realizationTime -= game.delta;
+      }else if(this.gauge.stop){
+        if(this.gauge.juice >= this.gauge.targetStart && this.gauge.juice <= this.gauge.targetEnd){
+          game.exitMenu();
+          game.enterMenu(Menus.itemGetMenu.load(2, this.background));
         }else{
           game.exitMenu();
           game.enterMenu(Menus.itemMissedMenu.load('backgroundBeach'));
@@ -370,11 +578,12 @@ let Menus = {
   },
 
   itemGetMenu: {
-    load: function(itemId){
+    load: function(itemId, background){
       let obj = new Menu();
       Menu.apply(obj);
       obj.name = `item${itemId} Menu`;
       obj.itemId = itemId;
+      obj.background = background;
 
       obj.particles = [];
 
@@ -408,9 +617,10 @@ let Menus = {
       })
     },
     draw: function(){
-      //game.artist.clearCanvas();
-      //Message
-      //particles up top to fly out of the background
+      if(this.background){
+        game.artist.drawImage(game.images[this.background], 0, 0, game.width, game.height);
+      }
+      
       this.particles.forEach(part=>{
         part.draw();
       })
@@ -441,7 +651,7 @@ let Menus = {
       this.name = "Fail Message";
       this.background = background;
       this.buttons.push(new Button({
-        x: game.width/2 + 10,
+        x: game.width/2 - game.width / 3 / 2,
         y: (game.height * 3 / 4) + 15,
         width: game.width / 3,
         height: 50,
@@ -467,17 +677,11 @@ let Menus = {
       }
       
       //Draw message box
-      let margin = 10;
-      game.artist.drawRect(game.width/2 + margin, game.height/4, game.width/3, game.height/2, '#ccc');
-      game.artist.drawRectOutline(game.width/2 + margin, game.height/4, game.width/3, game.height/2, '#000');
+      game.artist.drawRect(game.width/2 - game.width / 3 / 2, game.height/4, game.width/3, game.height/2, '#ccc');
+      game.artist.drawRectOutline(game.width/2 - game.width / 3 / 2, game.height/4, game.width/3, game.height/2, '#000');
 
-      game.artist.writeTextFit("You found the {Enter Description here!}", game.width/2 + margin +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
+      game.artist.writeTextFit("You were unable to find anything of use.", game.width/2 - game.width / 3 / 2 +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
 
-      //Draw Image
-
-
-
-      //okay button
       this.buttons.forEach(btn =>{
         btn.draw();
       })
