@@ -192,7 +192,7 @@ var game = {
     infosArr = infosStr.split('i');
     infosArr.shift(); //remove the blank entry
     
-    infosStr.forEach(str => {
+    infosArr.forEach(str => {
       this.player.infos.push(Number(str));
     })
     this.player.money = Number(moneyStr.split('m')[1]);
