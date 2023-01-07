@@ -23,9 +23,9 @@ var game = {
     this.artist.drawRect(0,0,this.width,this.height,"#aaa");
     this.background = new Background();
     
-    let imageNames = [];
+    let imageNames = ['backgroundBeach'];
 
-    for(let i = 1; i <= 20; i++){
+    for(let i = 1; i <= 25; i++){
       imageNames.push(`item${i}`);
     }
     ////////////////////  Images
@@ -169,6 +169,10 @@ var game = {
     return Math.floor(Math.random() * range) + start;
   },
 
+  randBool: function(weight = .5){
+    return Boolean(Math.random() < weight);
+  },
+
   loadFromURL: function(){
     let segs = window.location.href.split("#");
 
@@ -186,7 +190,6 @@ var game = {
     let infosStr = parts[0];
     let moneyStr = parts[1];
     let roundStr = parts[2];
-
 
     console.log(url);
     infosArr = infosStr.split('i');

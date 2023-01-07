@@ -11,10 +11,5 @@ let Player = function(){
   this.draw = function(){
    
   }
-
-  this.getItem = function(id){
-
-  }
-
 }
 
