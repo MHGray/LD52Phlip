@@ -221,6 +221,8 @@ let Menus = {
         text: 'Garage Sales',
         callback: function(){
           console.log('Garaging it up');
+          game.enterMenu(Menus.garageLocationMenu.load());
+
         }
       }));
 
@@ -369,6 +371,7 @@ let Menus = {
         text: `Stop and Dig`,
         callback: function(){
           game.player.action = true;
+          game.maestro.play('dig');
         }
       }))
 
@@ -599,98 +602,230 @@ let Menus = {
       this.name = "beachLoaction";
       this.realizationTime = 1500;
       this.background = 'backgroundBeach';
-
-      this.buttons.push(new Button({
-        x: game.width/2 + 5,
-        y: (game.height * 3 / 4) + 15,
-        width: game.width / 6 - 5,
-        height: 50,
-        text: 'Okay',
-        callback: function(){
-          console.log('okay');
-          game.exitMenu();
-          game.maestro.playMusic('choose');
+      this.xOffset = game.width/4;
+      this.yOffset = game.height/4;
+      this.showingPhase = true;
+      this.shufflePhase = false;
+      this.shuffleRound = 0;
+      this.readyToPick = false;
+      this.endReveal = false;
+      this.timeLeftThisRound = 2000;
+      this.timeBetweenRounds = 1000 * (1- game.round/10);
+      this.maxRounds = game.round * 2 + 2;
+      this.chosenCard = {x: -1, y:-1};
+      this.success = false;
+      this.possibleItems = [];
+      
+      for(let i = 1; i <= 35; i++){
+        if(!((i+1) %3)){
+          this.possibleItems.push(i);
         }
-      }));
-
-      this.buttons.push(new Button({
-        x: game.width /2 -150,
-        y: game.height / 3 * 2,
-        width: 300,
-        height: 50,
-        text: `Stop and Dig`,
-        callback: function(){
-          game.player.action = true;
-        }
-      }))
-
-      this.difficulty = game.round * 1.5;
-      this.gauge = {
-        x: game.width/3,
-        y: game.height /2 -20,
-        width: game.width/3,
-        height: 40,
-        juice: 0,
-        targetStart: game.randInt(70),
-        targetSize: game.randInt(20,5),
-        targetEnd: 0,
-        mode: 1,
-        stop: false,
       }
-      this.baseSpeed = 12;
 
-      this.gauge.targetEnd = Math.min(this.gauge.targetStart + this.gauge.targetSize, 100);
+      this.curItem = this.possibleItems[game.randInt(this.possibleItems.length)];
+
+      this.positions = {};
+      this.positions.values = [0,1,2,3,4,5];
+      this.positions.shuffle = function(){
+        this.temp = [];
+        while(this.values.length > 0){
+          this.temp.push(this.values.splice(game.randInt(this.values.length),1)[0]);
+        }
+        this.values = this.temp;
+      }
+      this.positions.possibleCardPositions = [
+        {
+          x:game.width/3 - this.xOffset,
+          y: game.height/3 - this.yOffset
+        },
+        {
+          x:game.width/3 * 2 - this.xOffset,
+          y: game.height / 3 * 2 - this.yOffset
+        },
+        {
+          x:game.width - this.xOffset,
+          y: game.height/3 - this.yOffset
+        },
+        {
+          x:game.width/3 - this.xOffset,
+          y: game.height / 3 * 2 - this.yOffset
+        },
+        {
+          x:game.width/3*2 - this.xOffset,
+          y: game.height/3 - this.yOffset
+        },
+        {
+          x:game.width - this.xOffset,
+          y: game.height / 3 * 2 - this.yOffset
+        },
+      ]
+      this.positions.getPos = function(){
+        return this.possibleCardPositions[this.values.pop()];
+      }
+      this.positions.reset = function(){
+        this.values = [0,1,2,3,4,5];
+        this.shuffle();
+      }
+
+      this.cards = [];
+      let card = function(params){
+        this.x = params.x;
+        this.y = params.y;
+        this.xOrig = params.x;
+        this.yOrig = params.y;
+        this.target = params.target;
+        this.isGood = params.isGood;
+
+        this.update = function(){
+          let menu = game.getCurMenu();
+          if(menu.shufflePhase){
+            this.x += (this.target.x - this.xOrig )/ menu.timeBetweenRounds * game.delta;
+            this.y += (this.target.y - this.yOrig )/ menu.timeBetweenRounds * game.delta;
+          }else{
+            this.x = this.target.x;
+            this.y = this.target.y;
+          }
+        },
+
+        this.draw = function(){
+          if(game.getCurMenu().showingPhase || game.getCurMenu().endReveal){
+            if(this.isGood)
+              game.artist.drawImage(game.images['goodCard'], this.x, this.y, 256,256);
+            else
+              game.artist.drawImage(game.images['garbageCard'], this.x, this.y, 256,256);
+            return;
+          }
+          game.artist.drawImage(game.images['cardBack'], this.x, this.y, 256,256);
+        }
+      }
+
+      for(let i = 0; i < 4; i++){
+        let good = Boolean(!i);
+        let position = this.positions.getPos();
+        this.cards.push(new card({
+          x:position.x,
+          y:position.y,
+          target: {
+            x: 0,
+            y: 0
+          },
+          isGood: good
+        }))
+      }
+
+      this.positions.reset();
+
+      for(let i = 0; i < 4; i++){
+        this.cards[i].target = this.positions.getPos();
+      }
+      this.positions.reset();
+
+      for(let i = 0; i < 6; i++){
+        let pos = this.positions.getPos();
+        let yOffset = 256;
+        this.buttons.push(new Button({
+          x:pos.x,
+          y:pos.y + yOffset,
+          width: game.width / 6 - 5,
+          height: 50,
+          text: "Guess This One",
+          callback: function(){
+            console.log(`clicked ${this.x} ${this.y}`)
+            if(game.getCurMenu().readyToPick)
+              game.getCurMenu().chosenCard = {x:this.x,y:this.y - yOffset};
+          }
+        }))
+      }
+
+      
 
       return this;
     },
     update: function(){
-      this.buttons.forEach(btn =>{
-        btn.update();
-      })
-      
-      if(game.player.action){
-        game.player.action = false;
-        this.gauge.stop = true;
+      if(this.questionAnswer){//Keeping Item?
+        game.player.addItem(this.curItem, Math.round(Math.random()*90 + 10)/10)
+        game.maestro.playMusic('choose');
+        game.exitMenu();
+        game.player.days++;
+        return;
       }
-      
-      //increase while mode is positive, decrease while negative, switch on either end
-      if(this.gauge.stop && this.realizationTime > 0){
-        this.realizationTime -= game.delta;
-      }else if(this.gauge.stop){
-        if(this.gauge.juice >= this.gauge.targetStart && this.gauge.juice <= this.gauge.targetEnd){
-          game.exitMenu();
-          game.enterMenu(Menus.itemGetMenu.load(2, this.background));
-        }else{
-          game.exitMenu();
-          game.enterMenu(Menus.itemMissedMenu.load('backgroundBeach'));
-          //Display failure message
+
+      this.buttons.forEach(btn => btn.update());
+      this.cards.forEach(card => card.update());
+
+      if(this.showingPhase){
+        this.timeLeftThisRound -= game.delta;
+        if(this.timeLeftThisRound <= 0){
+          //Go into shufflePhase
+          this.shufflePhase = true;
+          this.showingPhase = false;
         }
-        
-      }else{
-        this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
       }
-      if(this.gauge.juice > 100){
-        this.gauge.mode = -1;
-          this.gauge.juice = 100;
-      }else if(this.gauge.juice < 0){
-          this.gauge.juice = 0;
-          this.gauge.mode = 1;
+
+      if(this.shufflePhase){
+        if(this.timeLeftThisRound <= 0){ // Start New Shuffle Phase
+          //check if maxed out
+          if(this.shuffleRound == this.maxRounds){
+            this.shufflePhase = false;
+            this.readyToPick = true;
+            return;
+          }
+          this.positions.reset();
+          this.cards.forEach(card => {
+            card.target = this.positions.getPos()
+            card.xOrig = card.x;
+            card.yOrig = card.y;
+          });
+          this.shuffleRound++;
+          this.timeLeftThisRound = this.timeBetweenRounds;
+        }else{
+          this.timeLeftThisRound -= game.delta;
+        }
       }
+
+      if(this.readyToPick){
+        if(this.chosenCard.x >= 0){ //card has been chosen
+          let card = this.cards.find(c => c.x == this.chosenCard.x && c.y == this.chosenCard.y);
+          console.log(card);
+          if(card == undefined){
+            this.chosenCard = {x:-1,y:-1};
+          }else{
+            //found the card
+            //go to reveal phase
+            if(card.isGood) this.success = true;
+            this.readyToPick = false;
+            this.endReveal = true;
+            this.timeLeftThisRound = 1500;
+          }
+        }
+      }
+
+      if(this.endReveal){
+        this.timeLeftThisRound -= game.delta;
+        if(this.timeLeftThisRound <= 0){
+          if(this.success){
+            
+            game.enterMenu(Menus.itemGetMenu.load(this.curItem, 'backgroundGarage'));
+          }else{
+            game.exitMenu();
+            game.enterMenu(Menus.itemMissedMenu.load('backgroundGarage'));
+          }
+        }
+      }
+
+      //showing phase
+      // this.showingPhase = true;
+      //rounds
+
+      //reveal when picked
 
     },
     draw: function(){
-      game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
-      game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
-      game.artist.writeText(this.realizationTime, 10,10,10,'red');
+      game.artist.drawImage(game.images['backgroundGarage'], 0,0,game.width, game.height);
       
-      game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
-      game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
-      
-      let xScale = game.width/300;
-      
-      game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
-      game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
-      
+
+      this.cards.forEach(card => card.draw());
+
       //okay button
       this.buttons.forEach(btn =>{
         btn.draw();

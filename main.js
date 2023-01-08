@@ -23,7 +23,8 @@ var game = {
     this.artist.drawRect(0,0,this.width,this.height,"#aaa");
     this.background = new Background();
     
-    let imageNames = ['backgroundBeach', 'backgroundStorage', 'backgroundGarage','backgroundChoose','metalDetectorBad','metalDetectorGood'];
+    let imageNames = ['backgroundBeach', 'backgroundStorage', 'backgroundGarage','backgroundChoose','metalDetectorBad',
+                      'metalDetectorGood', 'goodCard', 'garbageCard','cardBack'];
 
     for(let i = 1; i <= 35; i++){
       imageNames.push(`item${i}`);
@@ -33,7 +34,7 @@ var game = {
       this.images[img] = this.artist.loadImg('./assets/' + img + '.png');
     })
     ////////////////////  SFX
-    let soundNames = ['beep'];
+    let soundNames = ['beep','dig'];
     soundNames.forEach(snd =>{
       this.sounds[snd] = this.maestro.loadSound(snd);
     })
