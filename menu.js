@@ -333,7 +333,7 @@ let Menus = {
       
       if(this.questionAnswer != undefined){
         if(this.questionAnswer){//Keeping Item?
-          game.player.addItem(this.curItem, Math.Round(Math.random()*90 + 10)/10)
+          game.player.addItem(this.curItem, Math.round(Math.random()*90 + 10)/10)
           game.exitMenu();
           return;
         }else{
