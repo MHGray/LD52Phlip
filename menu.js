@@ -103,6 +103,7 @@ let Menus = {
     load: function(){
       Menu.apply(this);
       this.name = "startMenu";
+      this.background = 'backgroundStart';
 
       this.buttons.push(new Button({
         x: 500,
@@ -112,6 +113,7 @@ let Menus = {
         text: "Start Game",
         callback: function(){
           console.log('helloworld');
+          game.maestro.play('click');
           game.enterMenu(Menus.chooseLocationMenu.load());
           game.player.started = true;
         }
@@ -126,6 +128,7 @@ let Menus = {
       })
     },
     draw: function(){
+      game.artist.drawImage(game.images['backgroundStart'], 0,0,game.width, game.height);
       //game.artist.drawRect(0,0,game.width,game.height,'white');
       game.artist.drawRectOutline(5,5,game.width-10,game.height-10,'black')
 
@@ -150,6 +153,7 @@ let Menus = {
         height: 50,
         text: 'Okay',
         callback: function(){
+          game.maestro.play('click');
           game.exitMenu();
         }
       }));
@@ -207,8 +211,10 @@ let Menus = {
         y: menuTop + 2,
         width: menuWidth - 4,
         height: (menuHeight/4) - 4,
-        text: 'Barn',
+        text: 'Go To Storage Units',
         callback: function(){
+          game.maestro.play('click');
+          game.enterMenu(Menus.storageLocationMenu.load());
           console.log('Barning it up');
         }
       }));
@@ -218,11 +224,11 @@ let Menus = {
         y: menuTop + 2 + menuHeight/4,
         width: menuWidth - 4,
         height: (menuHeight/4) - 4,
-        text: 'Garage Sales',
+        text: 'Go to Garage Sales',
         callback: function(){
+          game.maestro.play('click');
           console.log('Garaging it up');
           game.enterMenu(Menus.garageLocationMenu.load());
-
         }
       }));
 
@@ -231,8 +237,9 @@ let Menus = {
         y: menuTop + 2 + 2*menuHeight/4,
         width: menuWidth - 4,
         height: (menuHeight/4) - 4,
-        text: 'Beach',
+        text: 'Go metal detecting at the Beach',
         callback: function(){
+          game.maestro.play('click');
           console.log('Beaching it up');
           game.enterMenu(Menus.beachLocationMenu.load());
         }
@@ -245,6 +252,7 @@ let Menus = {
         height: (menuHeight/4) - 4,
         text: 'Leave to Market',
         callback: function(){
+          game.maestro.play('click');
           console.log('Sending to cukeds game');
           game.leaveToCukeds();
         }
@@ -370,6 +378,7 @@ let Menus = {
         height: 50,
         text: `Stop and Dig`,
         callback: function(){
+          game.maestro.play('click');
           game.player.action = true;
           game.maestro.play('dig');
         }
@@ -464,22 +473,18 @@ let Menus = {
     },
     draw: function(){
       game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
-      //game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
-      
-      //game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
-      //game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
       
       let xScale = game.width/300;
       
       //game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
       if(this.gauge.juice > this.gauge.targetStart && this.gauge.juice < this.gauge.targetEnd){ // In the good spot
-        game.artist.drawImage(game.images['metalDetectorGood'],this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -256, 256, 256);
+        game.artist.drawImage(game.images['metalDetectorGood'],this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -128, 256, 256);
         if(this.shouldBeep){
           game.maestro.play('beep');
           this.shouldBeep = false;
         }
       }else{
-        game.artist.drawImage(game.images['metalDetectorBad'],this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -256, 256, 256);
+        game.artist.drawImage(game.images['metalDetectorBad'],this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -128, 256, 256);
           this.shouldBeep = true;
       }
       //game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
@@ -494,102 +499,158 @@ let Menus = {
   storageLocationMenu:{
     load: function(){
       Menu.apply(this);
-      this.name = "beachLoaction";
+      this.name = "storageLoaction";
       this.realizationTime = 1500;
-      this.background = 'backgroundBeach';
-
-      this.buttons.push(new Button({
-        x: game.width/2 + 5,
-        y: (game.height * 3 / 4) + 15,
-        width: game.width / 6 - 5,
-        height: 50,
-        text: 'Okay',
-        callback: function(){
-          console.log('okay');
-          game.maestro.playMusic('choose');
-          game.exitMenu();
+      this.background = 'backgroundStorage';
+      this.possibleItems = [];
+      
+      for(let i = 1; i <= 35; i++){
+        if(!((i+2) %3)){
+          this.possibleItems.push(i);
         }
-      }));
-
-      this.buttons.push(new Button({
-        x: game.width /2 -150,
-        y: game.height / 3 * 2,
-        width: 300,
-        height: 50,
-        text: `Stop and Dig`,
-        callback: function(){
-          game.player.action = true;
-        }
-      }))
-
-      this.difficulty = game.round * 1.5;
-      this.gauge = {
-        x: game.width/3,
-        y: game.height /2 -20,
-        width: game.width/3,
-        height: 40,
-        juice: 0,
-        targetStart: game.randInt(70),
-        targetSize: game.randInt(20,5),
-        targetEnd: 0,
-        mode: 1,
-        stop: false,
       }
-      this.baseSpeed = 12;
 
-      this.gauge.targetEnd = Math.min(this.gauge.targetStart + this.gauge.targetSize, 100);
+      this.curItem = this.possibleItems[game.randInt(this.possibleItems.length)];
+
+      this.paddle = {
+        x: 0,
+        y: game.height - 40,
+        width: 150 - game.round * 10,
+        height: 20,
+        image: game.images['paddle'],
+
+        update: function(){
+          this.x = game.controller.x - this.width/2;
+        },
+
+        draw: function(){
+          game.artist.drawImage(this.image,this.x,this.y,this.width,this.height);
+        }
+      }
+      game.player.moneyLossPause = true;
+      this.balls = [];
+      this.ball = function(timeToLaunch){
+        this.x = -100;        
+        this.y = game.randInt(game.height/2);
+        this.width = 100;
+        this.height = 100;
+        this.xSpeed = game.randInt(3,2);
+        this.ySpeed = 0;
+        this.image = game.images['storageBag'];
+        this.timeToLaunch = timeToLaunch;
+        this.scored = false;
+        this.endWait = 500;
+
+        this.grounded = false;
+
+        this.launch = function(){
+          this.ySpeed = -1;
+        }
+
+        this.update = function(){
+          if(this.timeToLaunch > 0){
+            this.timeToLaunch -= game.delta;
+            if(this.timeToLaunch < 0) this.launch();
+            return;
+          }
+          if(this.scored || this.grounded){
+            return;
+          }
+          
+          //fail
+          
+
+          this.x += this.xSpeed * game.delta / 15;
+          this.y += this.ySpeed * game.delta / 8;
+
+          if(this.y + this.height > game.height){
+            this.grounded = true;
+            game.maestro.play('oof');
+            return;
+          }
+
+          this.ySpeed += game.delta /300;
+          let paddle = game.getCurMenu().paddle;
+          let atPaddle = this.y + this.height > game.height - 40;
+          let hitPaddle = !(this.x > paddle.x + paddle.width || this.x + this.width < paddle.x);
+          let preventVibrating = this.ySpeed > 0;
+          if( atPaddle && hitPaddle && preventVibrating){
+            this.ySpeed = - this.ySpeed;
+            game.maestro.play('bounce');
+          }
+
+          if(this.x > game.width){
+            this.scored = true;
+          }
+        } 
+        
+        this.draw = function(){
+          game.artist.drawImage(this.image,this.x,this.y,this.width,this.height);
+        }
+      }
+
+      for( let i = 0; i < 3 + game.round*2; i++){
+        this.balls.push(new this.ball(i*2200 + game.randInt(11,-5)*100))
+      }
+
+      // this.buttons.push(new Button({
+      //   x: game.width/2 + 5,
+      //   y: (game.height * 3 / 4) + 15,
+      //   width: game.width / 6 - 5,
+      //   height: 50,
+      //   text: 'Okay',
+      //   callback: function(){
+      //     console.log('okay');
+      //     game.maestro.playMusic('choose');
+      //     game.exitMenu();
+      //   }
+      // }));
 
       return this;
     },
     update: function(){
+      if(this.questionAnswer){//Keeping Item?
+        game.player.addItem(this.curItem, Math.round(Math.random()*90 + 10)/10)
+        game.maestro.playMusic('choose');
+        game.exitMenu();
+        game.player.days++;
+        return;
+      }
+      this.paddle.update();
+
+      this.balls.forEach(ball => ball.update());
+
+      let allBallsScoredOrDead = true;
+      if(this.balls.find(ball => ball.scored == false && ball.grounded == false) != undefined){
+        allBallsScoredOrDead = false;
+      }
+
+      if(allBallsScoredOrDead && this.endWait > 0){
+        this.endWait-=game.delta;
+      }else if(allBallsScoredOrDead){
+        //handle it
+        game.player.moneyLossPause = false;
+        let count = this.balls.filter(ball => ball.scored).length;
+        if( count >= this.balls.length/2 ){
+          game.enterMenu(Menus.itemGetMenu.load(this.curItem, 'backgroundStorage'));
+        }else{
+          game.exitMenu();
+          game.player.days++;
+          game.enterMenu(Menus.itemMissedMenu.load('backgroundStorage'));
+        }
+      }
+
+
       this.buttons.forEach(btn =>{
         btn.update();
       })
-      
-      if(game.player.action){
-        game.player.action = false;
-        this.gauge.stop = true;
-      }
-      
-      //increase while mode is positive, decrease while negative, switch on either end
-      if(this.gauge.stop && this.realizationTime > 0){
-        this.realizationTime -= game.delta;
-      }else if(this.gauge.stop){
-        if(this.gauge.juice >= this.gauge.targetStart && this.gauge.juice <= this.gauge.targetEnd){
-          game.exitMenu();
-          game.enterMenu(Menus.itemGetMenu.load(2, this.background));
-        }else{
-          game.exitMenu();
-          game.enterMenu(Menus.itemMissedMenu.load('backgroundBeach'));
-          //Display failure message
-        }
-        
-      }else{
-        this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
-      }
-      if(this.gauge.juice > 100){
-        this.gauge.mode = -1;
-          this.gauge.juice = 100;
-      }else if(this.gauge.juice < 0){
-          this.gauge.juice = 0;
-          this.gauge.mode = 1;
-      }
-
     },
     draw: function(){
-      game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
-      game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
-      game.artist.writeText(this.realizationTime, 10,10,10,'red');
-      
-      game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
-      game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
-      
-      let xScale = game.width/300;
-      
-      game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
-      game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
-      
+      game.artist.drawImage(game.images['backgroundStorage'], 0,0,game.width, game.height);
       //okay button
+      this.balls.forEach(ball => ball.draw());
+      this.paddle.draw();
+
       this.buttons.forEach(btn =>{
         btn.draw();
       })
@@ -599,7 +660,7 @@ let Menus = {
   garageLocationMenu:{
     load: function(){
       Menu.apply(this);
-      this.name = "beachLoaction";
+      this.name = "garageLoaction";
       this.realizationTime = 1500;
       this.background = 'backgroundBeach';
       this.xOffset = game.width/4;
@@ -627,6 +688,7 @@ let Menus = {
       this.positions = {};
       this.positions.values = [0,1,2,3,4,5];
       this.positions.shuffle = function(){
+        game.maestro.play('shuffle');
         this.temp = [];
         while(this.values.length > 0){
           this.temp.push(this.values.splice(game.randInt(this.values.length),1)[0]);
@@ -730,6 +792,7 @@ let Menus = {
           height: 50,
           text: "Guess This One",
           callback: function(){
+            game.maestro.play('click');
             console.log(`clicked ${this.x} ${this.y}`)
             if(game.getCurMenu().readyToPick)
               game.getCurMenu().chosenCard = {x:this.x,y:this.y - yOffset};
@@ -804,10 +867,10 @@ let Menus = {
         this.timeLeftThisRound -= game.delta;
         if(this.timeLeftThisRound <= 0){
           if(this.success){
-            
             game.enterMenu(Menus.itemGetMenu.load(this.curItem, 'backgroundGarage'));
           }else{
             game.exitMenu();
+            game.player.days++;
             game.enterMenu(Menus.itemMissedMenu.load('backgroundGarage'));
           }
         }
@@ -840,6 +903,7 @@ let Menus = {
       obj.name = `item${itemId} Menu`;
       obj.itemId = itemId;
       obj.background = background;
+      obj.priceOffset = game.randInt(21,-10)*10;
 
       obj.particles = [];
 
@@ -854,8 +918,13 @@ let Menus = {
         height: 50,
         text: 'Huzzah',
         callback: function(){
+          game.maestro.play('click');
           game.exitMenu();
-          game.enterMenu(Menus.questionMenu.load("Would you like to keep this item? (one per day)", obj.background));
+          if(obj.background == 'backgroundBeach')
+            game.enterMenu(Menus.questionMenu.load("Would you like to keep this item? (one per day)", obj.background));
+          else{
+            game.getCurMenu().questionAnswer = true;
+          }
         }
       }));
 
@@ -885,8 +954,10 @@ let Menus = {
       let margin = 10;
       game.artist.drawRect(game.width/2 + margin, game.height/4, game.width/3, game.height/2, '#ccc');
       game.artist.drawRectOutline(game.width/2 + margin, game.height/4, game.width/3, game.height/2, '#000');
-
-      game.artist.writeTextFit(game.getItemById(this.itemId).description, game.width/2 + margin +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
+      let item = game.getItemById(this.itemId);
+      game.artist.writeTextFit(item.name, game.width/2 + margin +10, game.height/4 + 6, 30, game.width/3 - 20, 'black');
+      game.artist.writeTextFit(item.description, game.width/2 + margin +10, game.height/4 + 40, 24, game.width/3 - 20, 'black');
+      game.artist.writeTextFit(`You think it would go for about \$${Math.max(item.baseValue + this.priceOffset,1)}`,game.width/2 + margin +10, 3*game.height/4 - 60, 24, game.width/3 - 20, 'black')
 
       //Draw Image
 
@@ -913,6 +984,7 @@ let Menus = {
         height: 50,
         text: 'Aww Man!',
         callback: function(){
+          game.maestro.play('click');
           game.exitMenu();
         }
       }));
@@ -959,6 +1031,7 @@ let Menus = {
         height: 50,
         text: 'Heck Yeah!',
         callback: function(){
+          game.maestro.play('click');
           game.exitMenu();
           game.getCurMenu().questionAnswer = true;
         }
@@ -971,6 +1044,7 @@ let Menus = {
         height: 50,
         text: 'No!',
         callback: function(){
+          game.maestro.play('click');
           game.exitMenu();
           game.getCurMenu().questionAnswer = false;
         }

@@ -6,6 +6,7 @@
   this.lostMoney = 0;
   this.moneyLosingTime = 2000;
   this.moneyX = 20;
+  this.moneyLossPause = false;
   this.days = 0;
   this.moneyY = 40;
   this.xSpeed = game.randInt(21,-10);
@@ -13,10 +14,9 @@
   this.started = false;
 
   this.update = function(){
-    if(this.money <= 0 || game.round == 0){
-      return;
-    }
-    if(this.moneyLosingTime > 0){
+    if(this.money <= 0 || game.round == 0 || this.moneyLossPause){
+      
+    }else if(this.moneyLosingTime > 0){
       this.moneyLosingTime -= game.delta;
     }else{
       this.moneyLosingTime = 2000;
@@ -35,6 +35,7 @@
   }
 
   this.draw = function(){
+    game.artist.drawRect(20,20,100,20,'#CCC');
     game.artist.writeTextFit(`\$${this.money}`, 20,20,20, game.width - 20, '#7F7');
 
     if(this.money > 0 && game.round > 0)
