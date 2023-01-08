@@ -7,6 +7,7 @@ let Menu = function(){
   this.hasLoaded = false;
   this.buttons = [];
   this.boxes = [];
+  this.questionAnswer = undefined;
   this.controller = game.controller;
 }
 
@@ -135,10 +136,11 @@ let Menus = {
   },
 
   messageMenu: {
-    load: function(message,sound){
+    load: function(message, background){
       Menu.apply(this);
       this.name = "Message";
       this.message = message;
+      this.background = background;
 
       this.buttons.push(new Button({
         x: game.width/2 + 5,
@@ -147,27 +149,9 @@ let Menus = {
         height: 50,
         text: 'Okay',
         callback: function(){
-          if(sound != undefined){
-            game.maestro.stopVoice(sound);
-          }
           game.exitMenu();
-          game.nextTurn();
         }
       }));
-
-      if(sound != undefined){
-        this.buttons.push(new Button({
-          x: game.width/2 - game.width/6,
-          y: (game.height * 3 / 4) + 15,
-          width: game.width / 6 - 5,
-          height: 50,
-          text: 'Play Audio',
-          callback: function(){
-            game.maestro.playVoice(sound);
-          }
-        }));
-      }
-
 
       return this;
     },
@@ -177,7 +161,7 @@ let Menus = {
       })
     },
     draw: function(){
-      //game.artist.clearCanvas();
+      game.artist.drawImage(game.images[this.background],0,0,game.width,game.height);
       //Message
       game.artist.drawRect(game.width/3, game.height/4, game.width/3, game.height/2, '#ccc');
       game.artist.drawRectOutline(game.width/3, game.height/4, game.width/3, game.height/2, '#000');
@@ -272,6 +256,15 @@ let Menus = {
       this.realizationTime = 1500;
       this.background = 'backgroundBeach';
       this.chances = 5;
+      this.keepingItem = false;
+      this.curItem = undefined;
+      this.possibleItems = [];
+
+      for(let i = 1; i <= 35; i++){
+        if(!(i %3)){
+          this.possibleItems.push(i);
+        }
+      }
 
       this.buttons.push(new Button({
         x: game.width/2 + 5,
@@ -325,22 +318,50 @@ let Menus = {
         this.gauge.stop = true;
       }
       
+      if(this.questionAnswer != undefined){
+        if(this.questionAnswer){//Keeping Item?
+          game.player.items.push(this.curItem);
+          game.exitMenu();
+          return;
+        }else{
+          this.curItem = undefined;
+        }
+
+        this.questionAnswer = undefined;
+      }else if(this.chances <= 0){
+        
+        game.exitMenu();
+        game.enterMenu(Menus.messageMenu.load("It is getting too late to metal detect. Better head home.", 'backgroundBeach'))
+        return;
+      }
+
       //increase while mode is positive, decrease while negative, switch on either end
       if(this.gauge.stop && this.realizationTime > 0){
         this.realizationTime -= game.delta;
       }else if(this.gauge.stop){
+        this.curItem = this.possibleItems[game.randInt(this.possibleItems.length)];
+        this.chances--;
+        this.gauge.stop = false;
+        
+        
         if(this.gauge.juice >= this.gauge.targetStart && this.gauge.juice <= this.gauge.targetEnd){
-          game.exitMenu();
-          game.enterMenu(Menus.itemGetMenu.load(2, this.background));
+          game.enterMenu(Menus.itemGetMenu.load(this.curItem, this.background));
         }else{
-          game.exitMenu();
           game.enterMenu(Menus.itemMissedMenu.load('backgroundBeach'));
+          this.curItem = undefined;
           //Display failure message
         }
-        
+
+        //reset gauge
+        this.gauge.targetStart = game.randInt(70);
+        this.gauge.targetSize = game.randInt(20,5);
+        this.gauge.targetEnd = Math.min(this.gauge.targetStart + this.gauge.targetSize, 100);
       }else{
+        //move gauges
         this.gauge.juice += game.delta /(this.baseSpeed - this.difficulty)* this.gauge.mode;
       }
+
+      //update gauge
       if(this.gauge.juice > 100){
         this.gauge.mode = -1;
           this.gauge.juice = 100;
@@ -600,7 +621,7 @@ let Menus = {
         text: 'Huzzah',
         callback: function(){
           game.exitMenu();
-          game.player.items.push({item: itemId, quality: game.randInt(10,1)});
+          game.enterMenu(Menus.questionMenu.load("Would you like to keep this item? (one per day)", obj.background));
         }
       }));
 
@@ -631,7 +652,7 @@ let Menus = {
       game.artist.drawRect(game.width/2 + margin, game.height/4, game.width/3, game.height/2, '#ccc');
       game.artist.drawRectOutline(game.width/2 + margin, game.height/4, game.width/3, game.height/2, '#000');
 
-      game.artist.writeTextFit("You found the {Enter Description here!}", game.width/2 + margin +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
+      game.artist.writeTextFit(game.getItemById(this.itemId).description, game.width/2 + margin +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
 
       //Draw Image
 
@@ -682,6 +703,65 @@ let Menus = {
       game.artist.drawRectOutline(game.width/2 - game.width / 3 / 2, game.height/4, game.width/3, game.height/2, '#000');
 
       game.artist.writeTextFit("You were unable to find anything of use.", game.width/2 - game.width / 3 / 2 +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
+
+      this.buttons.forEach(btn =>{
+        btn.draw();
+      })
+
+    }
+  },
+
+  questionMenu:{
+    load: function(message, background){
+      Menu.apply(this);
+      this.name = "QuestionMenu";
+      this.message = message;
+      this.background = background;
+
+      this.buttons.push(new Button({
+        x: game.width/2 - game.width / 3 / 2,
+        y: (game.height * 3 / 4) + 15,
+        width: game.width / 6-10,
+        height: 50,
+        text: 'Heck Yeah!',
+        callback: function(){
+          game.exitMenu();
+          game.getCurMenu().questionAnswer = true;
+        }
+      }));
+
+      this.buttons.push(new Button({
+        x: game.width/2 + 5,
+        y: (game.height * 3 / 4) + 15,
+        width: game.width / 6 - 5,
+        height: 50,
+        text: 'No!',
+        callback: function(){
+          game.exitMenu();
+          game.getCurMenu().questionAnswer = false;
+        }
+      }));
+
+      return this;
+    },
+
+    update: function(){
+      this.buttons.forEach(btn =>{
+        btn.update();
+      })
+    },
+
+    draw: function(){
+      //Backrground Image
+      if(this.background){
+        game.artist.drawImage(game.images[this.background], 0, 0, game.width, game.height);
+      }
+      
+      //Draw message box
+      game.artist.drawRect(game.width/2 - game.width / 3 / 2, game.height/4, game.width/3, game.height/2, '#ccc');
+      game.artist.drawRectOutline(game.width/2 - game.width / 3 / 2, game.height/4, game.width/3, game.height/2, '#000');
+
+      game.artist.writeTextFit(this.message, game.width/2 - game.width / 3 / 2 +10, game.height/4 + 10, 24, game.width/3 - 20, 'black');
 
       this.buttons.forEach(btn =>{
         btn.draw();
