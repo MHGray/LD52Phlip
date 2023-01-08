@@ -23,7 +23,7 @@ var game = {
     this.artist.drawRect(0,0,this.width,this.height,"#aaa");
     this.background = new Background();
     
-    let imageNames = ['backgroundBeach', 'backgroundStorage', 'backgroundGarage'];
+    let imageNames = ['backgroundBeach', 'backgroundStorage', 'backgroundGarage','backgroundChoose'];
 
     for(let i = 1; i <= 35; i++){
       imageNames.push(`item${i}`);
@@ -223,6 +223,9 @@ var game = {
       this.player.items.forEach(item=>{
         str+=`i${item.id}q${item.quality}`;
       })
+    }
+    if(game.round == 0){
+      game.round ++;
     }
     str += `-m${game.player.money}-r${game.round}`;
 

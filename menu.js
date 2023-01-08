@@ -179,6 +179,10 @@ let Menus = {
     load: function(){
       Menu.apply(this);
       this.name = "chooseLocation";
+      this.background = "backgroundChoose";
+      this.days = ['Mon', 'Tue','Wed','Thu','Fri','Sat'];
+      this.lastDay = false;
+      this.particles = [];
 
       let menuLeft = 2*game.width/3;
       let menuTop = 3*game.height/4;
@@ -249,12 +253,75 @@ let Menus = {
       this.buttons.forEach(btn =>{
         btn.update();
       })
+      if(game.player.days > 4 && !this.lastDay){
+        this.lastDay == true;
+        this.buttons.forEach(btn=> {
+          if(btn.text!='Leave to Market'){
+            btn.update = function(){};
+            btn.draw = function(){};
+          }
+        })
+      }
+
+      if(this.particles.length < game.player.items.length * 100){       
+        if(game.player.items.length == 1){
+          for(let i = 0; i < 100; i++){
+            this.particles.push(new Particle(179,339));
+          }
+        }
+        if(game.player.items.length == 2){
+          for(let i = 0; i < 100; i++){
+            this.particles.push(new Particle(414,339));
+          }
+        }
+        if(game.player.items.length == 3){
+          for(let i = 0; i < 100; i++){
+            this.particles.push(new Particle(639,339));
+          }
+        }
+        if(game.player.items.length == 4){
+          for(let i = 0; i < 100; i++){
+            this.particles.push(new Particle(864,339));
+          }
+        }
+        if(game.player.items.length == 5){
+          for(let i = 0; i < 100; i++){
+            this.particles.push(new Particle(1114,339));          
+          }
+        }
+      }
+
+      this.particles.forEach(part => part.update());
+
     },
     draw: function(){
-      //game.artist.clearCanvas();
+      game.artist.drawImage(game.images[this.background], 0,0,game.width, game.height);
+      this.particles.forEach(part => part.draw());
       game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
+
+      game.artist.writeText(this.days[game.player.days], 875,200,40, 'black');
+
+      if(game.player.items.length > 0){
+        game.artist.drawImage(game.images[`item${game.player.items[0].id}`], 115,275,128, 128);
+      }
       
-      
+      if(game.player.items.length > 1){
+        game.artist.drawImage(game.images[`item${game.player.items[1].id}`], 350,275,128, 128);
+        
+      }
+      if(game.player.items.length > 2){
+        game.artist.drawImage(game.images[`item${game.player.items[2].id}`], 575,275,128, 128);
+        
+      }
+      if(game.player.items.length > 3){
+        game.artist.drawImage(game.images[`item${game.player.items[3].id}`], 800,275,128, 128);
+        
+      }
+      if(game.player.items.length > 4){
+        game.artist.drawImage(game.images[`item${game.player.items[4].id}`], 1050,275,128, 128); 
+      }
+
+
       //okay button
       this.buttons.forEach(btn =>{
         btn.draw();
@@ -335,6 +402,7 @@ let Menus = {
         if(this.questionAnswer){//Keeping Item?
           game.player.addItem(this.curItem, Math.round(Math.random()*90 + 10)/10)
           game.exitMenu();
+          game.player.days++;
           return;
         }else{
           this.curItem = undefined;
@@ -343,6 +411,7 @@ let Menus = {
         this.questionAnswer = undefined;
       }else if(this.chances <= 0){
         
+        game.player.days++;
         game.exitMenu();
         game.enterMenu(Menus.messageMenu.load("It is getting too late to metal detect. Better head home.", 'backgroundBeach'))
         return;

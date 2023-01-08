@@ -6,6 +6,7 @@
   this.lostMoney = 0;
   this.moneyLosingTime = 2000;
   this.moneyX = 20;
+  this.days = 0;
   this.moneyY = 40;
   this.xSpeed = game.randInt(21,-10);
   this.ySpeed = game.randInt(21,-10);
