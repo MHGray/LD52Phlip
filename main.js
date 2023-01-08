@@ -39,7 +39,7 @@ var game = {
       this.sounds[snd] = this.maestro.loadSound(snd);
     })
     ///////////////////   Music
-    let musicNames = ['choose', 'beach'];
+    let musicNames = ['choose', 'beach','storage','garage'];
     musicNames.forEach(mus =>{
       this.music[mus] = this.maestro.loadSound(mus);
     })
@@ -146,7 +146,7 @@ var game = {
     }
     if(this.player.started)
       this.player.draw();
-    this.artist.drawRect(game.controller.x-1, game.controller.y-1, 3,3,'red');
+    // this.artist.drawRect(game.controller.x-1, game.controller.y-1, 3,3,'red');
 
     window.requestAnimationFrame(game.update.bind(game));
 	},

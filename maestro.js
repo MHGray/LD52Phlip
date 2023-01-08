@@ -59,6 +59,10 @@ let Maestro = function(){
     }
   }
 
+  this.pauseMusic = function(){
+    this.pause(this.music);
+  }
+
   this.pause = function(snd){
     snd.pause();
   }
