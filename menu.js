@@ -113,6 +113,7 @@ let Menus = {
         callback: function(){
           console.log('helloworld');
           game.enterMenu(Menus.chooseLocationMenu.load());
+          game.player.started = true;
         }
       }))
 
@@ -184,17 +185,17 @@ let Menus = {
       let menuWidth = game.width/3-5;
       let menuHeight = game.height/4-5;
 
-      this.buttons.push(new Button({
-        x: game.width/2 + 5,
-        y: (game.height * 3 / 4) + 15,
-        width: game.width / 6 - 5,
-        height: 50,
-        text: 'Okay',
-        callback: function(){
-          console.log('okay');
-          game.exitMenu();
-        }
-      }));
+      // this.buttons.push(new Button({
+      //   x: game.width/2 + 5,
+      //   y: (game.height * 3 / 4) + 15,
+      //   width: game.width / 6 - 5,
+      //   height: 50,
+      //   text: 'Okay',
+      //   callback: function(){
+      //     console.log('okay');
+      //     game.exitMenu();
+      //   }
+      // }));
 
       this.buttons.push(new Button({
         x: menuLeft + 2,
@@ -227,6 +228,18 @@ let Menus = {
         callback: function(){
           console.log('Beaching it up');
           game.enterMenu(Menus.beachLocationMenu.load());
+        }
+      }));
+
+      this.buttons.push(new Button({
+        x: menuLeft + 2,
+        y: menuTop + 2 + 3*menuHeight/4,
+        width: menuWidth - 4,
+        height: (menuHeight/4) - 4,
+        text: 'Leave to Market',
+        callback: function(){
+          console.log('Sending to cukeds game');
+          game.leaveToCukeds();
         }
       }));
 
@@ -266,17 +279,17 @@ let Menus = {
         }
       }
 
-      this.buttons.push(new Button({
-        x: game.width/2 + 5,
-        y: (game.height * 3 / 4) + 15,
-        width: game.width / 6 - 5,
-        height: 50,
-        text: 'Okay',
-        callback: function(){
-          console.log('okay');
-          game.exitMenu();
-        }
-      }));
+      // this.buttons.push(new Button({
+      //   x: game.width/2 + 5,
+      //   y: (game.height * 3 / 4) + 15,
+      //   width: game.width / 6 - 5,
+      //   height: 50,
+      //   text: 'Okay',
+      //   callback: function(){
+      //     console.log('okay');
+      //     game.exitMenu();
+      //   }
+      // }));
 
       this.buttons.push(new Button({
         x: game.width /2 -150,
@@ -320,7 +333,7 @@ let Menus = {
       
       if(this.questionAnswer != undefined){
         if(this.questionAnswer){//Keeping Item?
-          game.player.items.push(this.curItem);
+          game.player.addItem(this.curItem, Math.Round(Math.random()*90 + 10)/10)
           game.exitMenu();
           return;
         }else{
@@ -339,6 +352,7 @@ let Menus = {
       if(this.gauge.stop && this.realizationTime > 0){
         this.realizationTime -= game.delta;
       }else if(this.gauge.stop){
+        this.realizationTime = 1500;
         this.curItem = this.possibleItems[game.randInt(this.possibleItems.length)];
         this.chances--;
         this.gauge.stop = false;
@@ -373,8 +387,7 @@ let Menus = {
     },
     draw: function(){
       game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
-      game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
-      game.artist.writeText(this.realizationTime, 10,10,10,'red');
+      //game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
       
       game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
       game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );

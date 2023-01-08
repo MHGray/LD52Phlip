@@ -127,6 +127,8 @@ var game = {
       console.log("Ran out of menus");
     }
 
+    if(this.player.started)
+      this.player.update();
     //controller update has to be last
     this.controller.update();
     this.draw();
@@ -141,7 +143,8 @@ var game = {
       this.artist.drawRect(0,0,game.width,game.height, 'red');
       console.log('Something went wrong!');
     }
-
+    if(this.player.started)
+      this.player.draw();
     this.artist.drawRect(game.controller.x-1, game.controller.y-1, 3,3,'red');
 
     window.requestAnimationFrame(game.update.bind(game));
@@ -209,6 +212,21 @@ var game = {
     this.player.money = Number(moneyStr.split('m')[1]);
     this.round = Number(roundStr.split('r')[1]);
 
+
+  },
+
+  leaveToCukeds: function(){
+    let str = '#';
+    if(this.player.items.length == 0){
+      str+='i0q0'
+    }else{
+      this.player.items.forEach(item=>{
+        str+=`i${item.id}q${item.quality}`;
+      })
+    }
+    str += `-m${game.player.money}-r${game.round}`;
+
+    window.location.replace(`https://cukeds.github.io/LD52/index.html${str}`);
 
   },
 }
