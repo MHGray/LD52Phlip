@@ -183,6 +183,7 @@ let Menus = {
       this.days = ['Mon', 'Tue','Wed','Thu','Fri','Sat'];
       this.lastDay = false;
       this.particles = [];
+      game.maestro.playMusic('choose');
 
       let menuLeft = 2*game.width/3;
       let menuTop = 3*game.height/4;
@@ -339,6 +340,8 @@ let Menus = {
       this.keepingItem = false;
       this.curItem = undefined;
       this.possibleItems = [];
+      this.shouldBeep = false;
+      game.maestro.playMusic('beach');
 
       for(let i = 1; i <= 35; i++){
         if(!(i %3)){
@@ -401,6 +404,7 @@ let Menus = {
       if(this.questionAnswer != undefined){
         if(this.questionAnswer){//Keeping Item?
           game.player.addItem(this.curItem, Math.round(Math.random()*90 + 10)/10)
+          game.maestro.playMusic('choose');
           game.exitMenu();
           game.player.days++;
           return;
@@ -412,6 +416,7 @@ let Menus = {
       }else if(this.chances <= 0){
         
         game.player.days++;
+        game.maestro.playMusic('choose');
         game.exitMenu();
         game.enterMenu(Menus.messageMenu.load("It is getting too late to metal detect. Better head home.", 'backgroundBeach'))
         return;
@@ -458,13 +463,23 @@ let Menus = {
       game.artist.drawImage(game.images['backgroundBeach'], 0,0,game.width, game.height);
       //game.artist.drawRect(2*game.width/3, 3*game.height/4, game.width/3-5, game.height/4-5, '#ccc');
       
-      game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
-      game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
+      //game.artist.drawRect(game.width/3, game.height/2 -20, game.width/3, 40, '#CCC');
+      //game.artist.drawRect(game.width/3, game.height/2 -20, this.gauge.juice/100 * game.width/3, 40, 'green' );
       
       let xScale = game.width/300;
       
-      game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
-      game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
+      //game.artist.drawRect(game.width/3 + (this.gauge.targetStart * xScale), game.height/2 -20, (this.gauge.targetEnd - this.gauge.targetStart) * xScale, 40, 'red');
+      if(this.gauge.juice > this.gauge.targetStart && this.gauge.juice < this.gauge.targetEnd){ // In the good spot
+        game.artist.drawImage(game.images['metalDetectorGood'],this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -256, 256, 256);
+        if(this.shouldBeep){
+          game.maestro.play('beep');
+          this.shouldBeep = false;
+        }
+      }else{
+        game.artist.drawImage(game.images['metalDetectorBad'],this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -256, 256, 256);
+          this.shouldBeep = true;
+      }
+      //game.artist.drawRect(this.gauge.juice/100 * game.width/3 + game.width/3, game.height/2 -20, 2, 40, 'blue' );
       
       //okay button
       this.buttons.forEach(btn =>{
@@ -488,6 +503,7 @@ let Menus = {
         text: 'Okay',
         callback: function(){
           console.log('okay');
+          game.maestro.playMusic('choose');
           game.exitMenu();
         }
       }));
@@ -593,6 +609,7 @@ let Menus = {
         callback: function(){
           console.log('okay');
           game.exitMenu();
+          game.maestro.playMusic('choose');
         }
       }));
 
