@@ -150,9 +150,10 @@ let Menus = {
         y:3*game.height/4 - 100 + 52 + 52,
         width: 200,
         height: 50,
-        text: "SFX-",
+        text: "SFX+",
         callback:function(){
-          game.maestro.pauseMusic();
+          if(game.maestro.music)
+            game.maestro.pauseMusic();
           game.sfxVolume = Math.min(game.sfxVolume + 5, 100);
           localStorage.sfxVolume = game.sfxVolume;
           game.maestro.play('yay');
@@ -166,7 +167,8 @@ let Menus = {
         height: 50,
         text: "SFX-",
         callback:function(){
-          game.maestro.pauseMusic();
+          if(game.maestro.music)
+            game.maestro.pauseMusic();
           game.sfxVolume = Math.max(game.sfxVolume - 5, 0);
           localStorage.sfxVolume = game.sfxVolume;
           game.maestro.play('yay');
